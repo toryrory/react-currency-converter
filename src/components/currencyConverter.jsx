@@ -15,16 +15,23 @@ const CurrencyConverter = () => {
   const [toCurrency, setToCurrency] = useState();
   const [fromInputVal, setFromInputVal] = useState("");
   const [toInputVal, setToInputVal] = useState("");
-
+  const [titleValue, setTitleValue] = useState({EUR: null, USD: null, date: null})
+ 
   const previousFromCurrency = usePreviousValue(fromCurrency);
   const previousToCurrency = usePreviousValue(toCurrency);
 
   useEffect(() => {
     fetch(`${BASE_URL}/latest/UAH`)
       .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        const filtredData = Object.keys(data.conversion_rates).filter(
+      .then(({conversion_rates, time_last_update_utc
+}) => {
+        
+        setTitleValue({
+          EUR: (1 / conversion_rates.EUR).toFixed(2),
+          USD: (1 / conversion_rates.USD).toFixed(2),
+          date: time_last_update_utc,
+        });
+        const filtredData = Object.keys(conversion_rates).filter(
           (currency) => currencyToFind.includes(currency)
         );
         const idxUAH = filtredData.indexOf("UAH");
@@ -39,11 +46,13 @@ const CurrencyConverter = () => {
     if (previousFromCurrency !== fromCurrency) {
       fetch(`${BASE_URL}/pair/${fromCurrency}/${toCurrency}/${fromInputVal}`)
         .then((res) => res.json())
-        .then((data) => setToInputVal(data.conversion_result));
+        .then(({ conversion_result }) => setToInputVal(conversion_result));
     } else if (previousToCurrency !== toCurrency) {
       fetch(`${BASE_URL}/pair/${toCurrency}/${fromCurrency}/${toInputVal}`)
         .then((res) => res.json())
-        .then((data) => setFromInputVal(data.conversion_result));
+        .then(({ conversion_result }) =>
+          setFromInputVal(conversion_result)
+        );
     }
   }, [
     fromCurrency,
@@ -60,17 +69,21 @@ const CurrencyConverter = () => {
     if (name === fromCurrency) {
       fetch(`${BASE_URL}/pair/${name}/${toCurrency}/${value}`)
         .then((res) => res.json())
-        .then((data) => setToInputVal(data.conversion_result));
+        .then(({ conversion_result }) =>
+          setToInputVal(conversion_result.toFixed(2))
+        );
     } else {
       fetch(`${BASE_URL}/pair/${name}/${fromCurrency}/${value}`)
         .then((res) => res.json())
-        .then((data) => setFromInputVal(data.conversion_result));
+        .then(({ conversion_result }) =>
+          setFromInputVal(conversion_result.toFixed(2))
+        );
     }
   };
 
   return (
     <Wrapper>
-      <ConverterHeader />
+      <ConverterHeader titleValue={titleValue} />
       <ConverterInput
         currencyOptions={currencyOptions}
         selectedCurrency={fromCurrency}
