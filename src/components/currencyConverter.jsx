@@ -1,6 +1,5 @@
 import ConverterInput from "./converterInput";
 import ConverterHeader from "./converterHeader";
-import { Wrapper } from "./currencyConverter.styled";
 import { useEffect, useState } from "react";
 import usePreviousValue from "../hooks/usePreviousValue";
 
@@ -46,12 +45,14 @@ const CurrencyConverter = () => {
     if (previousFromCurrency !== fromCurrency) {
       fetch(`${BASE_URL}/pair/${fromCurrency}/${toCurrency}/${fromInputVal}`)
         .then((res) => res.json())
-        .then(({ conversion_result }) => setToInputVal(conversion_result));
+        .then(({ conversion_result }) =>
+          setToInputVal(conversion_result ? conversion_result.toFixed(2) : "")
+        );
     } else if (previousToCurrency !== toCurrency) {
       fetch(`${BASE_URL}/pair/${toCurrency}/${fromCurrency}/${toInputVal}`)
         .then((res) => res.json())
         .then(({ conversion_result }) =>
-          setFromInputVal(conversion_result)
+          setFromInputVal(conversion_result ? conversion_result.toFixed(2) : "")
         );
     }
   }, [
@@ -70,36 +71,40 @@ const CurrencyConverter = () => {
       fetch(`${BASE_URL}/pair/${name}/${toCurrency}/${value}`)
         .then((res) => res.json())
         .then(({ conversion_result }) =>
-          setToInputVal(conversion_result.toFixed(2))
+          setToInputVal(conversion_result ? conversion_result.toFixed(2) : '')
         );
     } else {
       fetch(`${BASE_URL}/pair/${name}/${fromCurrency}/${value}`)
         .then((res) => res.json())
         .then(({ conversion_result }) =>
-          setFromInputVal(conversion_result.toFixed(2))
+          setFromInputVal(conversion_result ? conversion_result.toFixed(2) : "")
         );
     }
   };
 
   return (
-    <Wrapper>
+    <div className='bg-zinc-900 border-violet-500 border-2 rounded-2xl xs:mx-1 mx-auto my-56 xs:w-auto sm:w-96 px-2 pb-4 pt-2'>
       <ConverterHeader titleValue={titleValue} />
-      <ConverterInput
-        currencyOptions={currencyOptions}
-        selectedCurrency={fromCurrency}
-        onChangeCurrency={(e) => setFromCurrency(e.target.value)}
-        onChangeInput={onChangeInput}
-        inputValue={fromInputVal || ""}
-      />
-      <span>=</span>
-      <ConverterInput
-        currencyOptions={currencyOptions}
-        selectedCurrency={toCurrency}
-        onChangeCurrency={(e) => setToCurrency(e.target.value)}
-        onChangeInput={onChangeInput}
-        inputValue={toInputVal || ""}
-      />
-    </Wrapper>
+      <div className='flex justify-around items-center'>
+        <ConverterInput
+          currencyOptions={currencyOptions}
+          selectedCurrency={fromCurrency}
+          onChangeCurrency={(e) => setFromCurrency(e.target.value)}
+          onChangeInput={onChangeInput}
+          inputValue={fromInputVal || ""}
+        />
+        <div>
+          <span className='text-lg text-violet-400 '>=</span>
+        </div>
+        <ConverterInput
+          currencyOptions={currencyOptions}
+          selectedCurrency={toCurrency}
+          onChangeCurrency={(e) => setToCurrency(e.target.value)}
+          onChangeInput={onChangeInput}
+          inputValue={toInputVal || ""}
+        />
+      </div>
+    </div>
   );
 };
 export default CurrencyConverter;
